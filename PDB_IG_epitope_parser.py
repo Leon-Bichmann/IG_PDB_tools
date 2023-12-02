@@ -55,12 +55,13 @@ for row in df.iterrows():
     #retrieve neighbourhood residues
     ns = NeighborSearch(atoms)
     neighbour_rs=[]
+    radius=8 # angstrom
     
     #VH CDR3 neighbourhood
     for i in range(vh_cdr3_idx-1,vh_cdr3_idx+1+len(cdrh3)):
         vh_as=structure[vh][i].get_atoms()
         for a in vh_as:
-            for na in ns.search(a.coord,8):
+            for na in ns.search(a.coord,radius):
                 if na.get_parent().get_parent().id!=vl and na.get_parent().get_parent().id!=vh:
                     neighbour_rs.append(na.get_parent())
 
@@ -68,17 +69,18 @@ for row in df.iterrows():
     for i in range(vl_cdr3_idx-1,vl_cdr3_idx+1+len(cdrl3)):
         vl_as=structure[vl][i].get_atoms()
         for a in vl_as:
-            for na in ns.search(a.coord,8):
+            for na in ns.search(a.coord,radius):
                 if na.get_parent().get_parent().id!=vl and na.get_parent().get_parent().id!=vh:
                     neighbour_rs.append(na.get_parent())
 
     #Identify antigen chain based on majority vote                
     antigen_chain = Counter([r.get_parent().id for r in neighbour_rs]).most_common(1)[0][0]
     antigen_epitope_reslist=[]
-    for r in neighbour_as:
+    for r in neighbour_rs:
         if r.get_parent().id==antigen_chain:
             antigen_epitope_reslist.append(r.get_resname()+"_"+str(r.id[1])+antigen_chain)
  
 
+    #print neighbourhood residue list
     print(list(set(antigen_epitope_reslist)))
-    break
+    break # remove stop for parsing the whole db
